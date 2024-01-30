@@ -10,170 +10,218 @@ import java.util.Random;
  * @author CS Staff
  * 
  * @version 2021-08-23
- * @param <K>
- *            Key
- * @param <V>
- *            Value
+ * @param <K> Key
+ * @param <V> Value
  */
-public class SkipList<K extends Comparable<? super K>, V> implements Iterable<KVPair<K,V>> {
-    private SkipNode head; // First element (Sentinel Node)
-    private int size; // number of entries in the Skip List
+public class SkipList<K extends Comparable<? super K>, V> implements Iterable<KVPair<K, V>> {
+	private SkipNode head; // First element (Sentinel Node)
+	private int size; // number of entries in the Skip List
 
-    /**
-     * Initializes the fields head, size and level
-     */
-    public SkipList() {
-        head = new SkipNode(null, 0);
-        size = 0;
-    }
+	/**
+	 * Initializes the fields head, size and level
+	 */
+	public SkipList() {
+		head = new SkipNode(null, 0);
+		size = 0;
+	}
 
+	/**
+	 * Returns a random level number which is used as the depth of the SkipNode
+	 * 
+	 * @return a random level number
+	 */
+	int randomLevel() {
+		int lev;
+		Random value = new Random();
+		for (lev = 0; Math.abs(value.nextInt()) % 2 == 0; lev++) {
+			// Do nothing
+		}
+		return lev; // returns a random level
+	}
 
-    /**
-     * Returns a random level number which is used as the depth of the SkipNode
-     * 
-     * @return a random level number
-     */
-    int randomLevel() {
-        int lev;
-        Random value = new Random();
-        for (lev = 0; Math.abs(value.nextInt()) % 2 == 0; lev++) {
-            // Do nothing
-        }
-        return lev; // returns a random level
-    }
+	/**
+	 * Searches for the KVPair using the key which is a Comparable object.
+	 * 
+	 * @param key key to be searched for
+	 */
+	public ArrayList<KVPair<K, V>> search(K key) {
+	    SkipNode l = head;
+	    boolean found = false;
+	    ArrayList<KVPair<K,V>> sol = new ArrayList<KVPair<K,V>>();
+	    for (int i = l.level-1;i<0;i--) {
+	        if (found == true) {
+	            break;
+	        }else {
+	            l = head;
+	            while (true) {
+	                if (l == null) {
+	                    break;
+	                }else if (l.pair.getKey() == key) {
+	                    sol.add(l.pair);
+	                    found = true;
+	                    break;
+	                }else {
+	                    l = l.forward[i];
+	                }
+	                
+	            }   
+	        }
+	    }
+	    if (found == true) {
+	        l = l.forward[0];
+	        while (true) {
+	            if (l.pair.getKey() == key) {
+	                sol.add(l.pair);
+	                l = l.forward[0];
+	            }
+	        }
+	    }
+		return sol;
+	}
 
+	/**
+	 * @return the size of the SkipList
+	 */
+	public int size() {
+		return size;
+	}
 
-    /**
-     * Searches for the KVPair using the key which is a Comparable object.
-     * 
-     * @param key
-     *            key to be searched for
-     */
-    public ArrayList<KVPair<K, V>> search(K key) {
-        return null;
-    }
+	/**
+	 * Inserts the KVPair in the SkipList at its appropriate spot as designated by
+	 * its lexicoragraphical order.
+	 * 
+	 * @param it the KVPair to be inserted
+	 */
+	@SuppressWarnings("unchecked")
+	public void insert(KVPair<K, V> it) {
+	    int new_level = this.randomLevel();
+	    SkipNode[] TempList = (SkipNode[]) Array.newInstance(SkipList.SkipNode.class, new_level);
+	    if (new_level != this.head.level) {
+	        this.adjustHead(new_level);
+	    }
+	    SkipNode temp = this.head;
+	    SkipNode newNode = new SkipNode(it,new_level);
+	    skipNode insert_left;
+	    for (int i=this.head.level-1;i>=0;i--) {
+	        temp = this.head;
+	        while(true) {
+	            if (temp == null) {
+	                break;
+	                }
+	            boolean l1 = temp.pair.getKey().compareTo(it.getKey())<=0;
+	            if (temp.forward[i] == null) {
+	                TempList[i] = temp;
+	                break;
+	            }else {
+	                boolean l2 = temp.forward[i].pair.getKey().compareTo(it.getKey())>0;
+	                if (l1 && l2) {
+	                    TempList[i] = temp;
+	                    l.forward[i] 
+	                }else{
+	                    temp = temp.forward[i];   
+	            }
+	        }
+	    }}
+	    
 
+	}
 
-    /**
-     * @return the size of the SkipList
-     */
-    public int size() {
-        return size;
-    }
+	/**
+	 * Increases the number of levels in head so that no element has more indices
+	 * than the head.
+	 * 
+	 * @param newLevel the number of levels to be added to head
+	 */
+	@SuppressWarnings("unchecked")
+	public void adjustHead(int newLevel) {
+	    SkipNode temp = head;
+	    temp.forward = (SkipNode[]) Array.newInstance(SkipList.SkipNode.class, newLevel);
+	    for (int i=0;i<head.level;i++) {
+	        temp.forward[i] = head.forward[i];
+	    }
+	    head = temp;
+	}
 
+	/**
+	 * Removes the KVPair that is passed in as a parameter and returns true if the
+	 * pair was valid and false if not.
+	 * 
+	 * @param pair the KVPair to be removed
+	 * @return returns the removed pair if the pair was valid and null if not
+	 */
 
-    /**
-     * Inserts the KVPair in the SkipList at its appropriate spot as designated
-     * by its lexicoragraphical order.
-     * 
-     * @param it
-     *            the KVPair to be inserted
-     */
-    @SuppressWarnings("unchecked")
-    public void insert(KVPair<K, V> it) {
-        
-    }
+	@SuppressWarnings("unchecked")
+	public KVPair<K, V> remove(K key) {
+		return null;
+	}
 
+	/**
+	 * Removes a KVPair with the specified value.
+	 * 
+	 * @param val the value of the KVPair to be removed
+	 * @return returns true if the removal was successful
+	 */
+	public KVPair<K, V> removeByValue(V val) {
 
-    /**
-     * Increases the number of levels in head so that no element has more
-     * indices than the head.
-     * 
-     * @param newLevel
-     *            the number of levels to be added to head
-     */
-    @SuppressWarnings("unchecked")
-    public void adjustHead(int newLevel) {
-        
-    }
+		return null;
+	}
 
+	/**
+	 * Prints out the SkipList in a human readable format to the console.
+	 */
+	public void dump() {
 
-    /**
-     * Removes the KVPair that is passed in as a parameter and returns true if
-     * the pair was valid and false if not.
-     * 
-     * @param pair
-     *            the KVPair to be removed
-     * @return returns the removed pair if the pair was valid and null if not
-     */
+	}
 
-    
-    @SuppressWarnings("unchecked")
-    public KVPair<K, V> remove(K key) {
-        return null;
-    }
-  
-    /**
-     * Removes a KVPair with the specified value.
-     * 
-     * @param val
-     *            the value of the KVPair to be removed
-     * @return returns true if the removal was successful
-     */
-    public KVPair<K, V> removeByValue(V val) {
-  
-        return null;
-    }
+	/**
+	 * This class implements a SkipNode for the SkipList data structure.
+	 * 
+	 * @author CS Staff
+	 * 
+	 * @version 2016-01-30
+	 */
+	private class SkipNode {
 
-    /**
-     * Prints out the SkipList in a human readable format to the console.
-     */
-    public void dump() {
-  
-    }
+		// the KVPair to hold
+		private KVPair<K, V> pair;
+		// An array of pointers to subsequent nodes
+		private SkipNode[] forward;
+		// the level of the node
+		private int level;
 
-    /**
-     * This class implements a SkipNode for the SkipList data structure.
-     * 
-     * @author CS Staff
-     * 
-     * @version 2016-01-30
-     */
-    private class SkipNode {
+		/**
+		 * Initializes the fields with the required KVPair and the number of levels from
+		 * the random level method in the SkipList.
+		 * 
+		 * @param tempPair the KVPair to be inserted
+		 * @param level    the number of levels that the SkipNode should have
+		 */
+		@SuppressWarnings("unchecked")
+		public SkipNode(KVPair<K, V> tempPair, int level) {
+			pair = tempPair;
+			forward = (SkipNode[]) Array.newInstance(SkipList.SkipNode.class, level + 1);
+			this.level = level;
+		}
 
-        // the KVPair to hold
-        private KVPair<K, V> pair;
-        // An array of pointers to subsequent nodes
-        private SkipNode[] forward;
-        // the level of the node
-        private int level;
+		/**
+		 * Returns the KVPair stored in the SkipList.
+		 * 
+		 * @return the KVPair
+		 */
+		public KVPair<K, V> element() {
+			return pair;
+		}
 
-        /**
-         * Initializes the fields with the required KVPair and the number of
-         * levels from the random level method in the SkipList.
-         * 
-         * @param tempPair
-         *            the KVPair to be inserted
-         * @param level
-         *            the number of levels that the SkipNode should have
-         */
-        @SuppressWarnings("unchecked")
-        public SkipNode(KVPair<K, V> tempPair, int level) {
-            pair = tempPair;
-            forward = (SkipNode[])Array.newInstance(SkipList.SkipNode.class,
-                level + 1);
-            this.level = level;
-        }
+	}
 
+	private class SkipListIterator implements Iterator<KVPair<K, V>> {
+		private SkipNode current;
 
-        /**
-         * Returns the KVPair stored in the SkipList.
-         * 
-         * @return the KVPair
-         */
-        public KVPair<K, V> element() {
-            return pair;
-        }
+		public SkipListIterator() {
+			current = head;
+		}
 
-    }
-    
-    private class SkipListIterator implements Iterator<KVPair<K, V>> {
-        private SkipNode current;
-		
-        public SkipListIterator() {
-        	current = head;
-        }
-        @Override
+		@Override
 		public boolean hasNext() {
 			// TODO Auto-generated method stub
 			return current.forward[0] != null;
@@ -186,11 +234,11 @@ public class SkipList<K extends Comparable<? super K>, V> implements Iterable<KV
 			current = current.forward[0];
 			return elem;
 		}
-    	
-    }
+
+	}
 
 	@Override
-	public Iterator<KVPair<K,V>> iterator() {
+	public Iterator<KVPair<K, V>> iterator() {
 		// TODO Auto-generated method stub
 		return new SkipListIterator();
 	}
